@@ -1,0 +1,8 @@
+# crew_config.yaml
+agents:
+  - theft_crime_scene_agent
+
+tasks:
+  - inspection_task
+
+verbose: true

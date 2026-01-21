@@ -1,5 +1,9 @@
+from crewai import Agent, Crew, Task
+from crewai.tools import tool
 from dotenv import load_dotenv
+from litellm import completion
 from rpt1.call_rpt1 import RPT1Client
+import os
 
 
 def main():
@@ -88,7 +92,7 @@ def main():
                 "id": 2,
                 "type": "necklace",
                 "name": "Sapphire Pendant Necklace",
-                "value": "'[PREDICT]'", #8500 is missing value to be predicted
+                "value": "'[PREDICT]'",  # 8500 is missing value to be predicted
                 "description": "Platinum chain, 1.5ct blue sapphire",
                 "material": '["sapphire", "platinum"]',
                 "artist": "Tiffany & Co.",
@@ -97,7 +101,7 @@ def main():
                 "id": 3,
                 "type": "necklace",
                 "name": "Pearl Strand Necklace",
-                "value": 2200,
+                "value": "[PREDICT]",
                 "description": "Freshwater pearls, 14k gold clasp, elegant vintage style",
                 "material": '["pearl", "gold"]',
                 "artist": "n/a",
@@ -259,7 +263,7 @@ def main():
                 "id": 21,
                 "type": "painting",
                 "name": "Sunset Over Lake",
-                "value": "'[PREDICT]'", #25000 is missing value to be predicted
+                "value": "'[PREDICT]'",  # 25000 is missing value to be predicted
                 "description": "Oil on canvas, impressionist landscape",
                 "material": '["oil", "canvas"]',
                 "artist": "J. Turner",
@@ -268,7 +272,7 @@ def main():
                 "id": 22,
                 "type": "painting",
                 "name": "Abstract Blue",
-                "value": 18000, 
+                "value": 18000,
                 "description": "Acrylic, modern abstract",
                 "material": '["acrylic", "canvas"]',
                 "artist": "M. Rothko",
@@ -360,6 +364,41 @@ def main():
     response = rpt1_client.post_request(json_payload=payload_theft)
     print("Prediction response status code:", response.status_code)
     print("Prediction response JSON:", response.json())
+
+
+    @tool("call_rpt1")
+    def call_rpt1(payload_theft: dict) -> str:
+        """Function to call RPT-1 model via RPT1Client"""
+        response = rpt1_client.post_request(json_payload=payload_theft)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Error: {response.status_code} - {response.text}"
+
+
+    theft_crime_scene_investigator = Agent(
+        role="Theft Crime Scene Investigator",
+        goal="Predict the missing values of stolen items using the RPT-1 model via the call_rpt1 tool.",
+        backstory="An expert theft crime investigator specialiced on predicting the value of stolen luxury goods.",
+        llm="sap/gpt-4o",
+        tools=[call_rpt1],
+        # multimodal=True,  # This enables multimodal capabilities
+    )
+
+    # Create a task for image analysis
+    inspection_task = Task(
+        description=f"Analyze the theft crime scene and predict the missing values of stolen items using the RPT-1 model via the call_rpt1 tool. Use this payload: {payload_theft} as input.",
+        expected_output="JSON with predicted values for the stolen items.",
+        agent=theft_crime_scene_investigator,
+    )
+
+    # Create and run the crew
+    crew = Crew(
+        agents=[theft_crime_scene_investigator], tasks=[inspection_task], verbose=True
+    )
+
+    result = crew.kickoff()
+    print("\n📘 Result:\n", result)
 
 
 if __name__ == "__main__":

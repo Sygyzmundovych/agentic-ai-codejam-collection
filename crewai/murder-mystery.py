@@ -22,21 +22,22 @@ crime_scene_investigator = Agent(
     goal="Analyze the crime scene shown in the image and extract possible clues, victims, murder weapons, and other relevant details.",
     backstory="An expert crime investigator specialiced on securing evidence.",
     llm="sap/gpt-4o",
-    multimodal=True,  # This enables multimodal capabilities
-    verbose=True
+    #multimodal=True,  # This enables multimodal capabilities
 )
 
 # Create a task for image analysis
 inspection_task = Task(
-    description=f"Analyze the crime scene image at {IMAGE_PATH} and provide a description of relevant objects.",
-    expected_output="A description of the found objects relevant to the crime scene.",
+    #description=f"Analyze the crime scene image at {IMAGE_PATH} and provide a description of relevant objects.",
+    description=f"Make up a theft crime scene with expensive jewlery and paintings. Provide a list of missing items in json format of relevant objects including description, other relevant fields and value. Make sure some values are not filled but could be guessed by a regression model based on the other features.",
+    expected_output="A list in json format of stolen objects including relevant fields with some missing values.",
     agent=crime_scene_investigator
 )
 
 # Create and run the crew
 crew = Crew(
     agents=[crime_scene_investigator],
-    tasks=[inspection_task]
+    tasks=[inspection_task],
+    verbose=True
 )
 
 result = crew.kickoff()

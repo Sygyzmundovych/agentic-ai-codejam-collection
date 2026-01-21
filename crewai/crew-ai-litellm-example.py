@@ -3,16 +3,17 @@ from crewai.tools import tool
 from dotenv import load_dotenv
 from litellm import completion
 
-# pip install -U litellm crewai   run this twice   
+# pip install -U litellm crewai   run this twice
 # pip install 'litellm[proxy]'
 
 load_dotenv()
 
 response = completion(
-  model="sap/gpt-4o-mini",
-  messages=[{ "content": "Hello, how are you?","role": "user"}]
+    model="sap/gpt-4o-mini",
+    messages=[{"content": "Hello, how are you?", "role": "user"}],
 )
 print(response)
+
 
 @tool("get_weather")
 def get_weather(city: str) -> str:
@@ -29,33 +30,34 @@ def get_weather(city: str) -> str:
         return mock_weather_db[city_normalized]
     else:
         return f"The weather in {city} is sunny with a temperature of 20°C."
-    
+
+
 city = "london"
 
 agent = Agent(
     role="Weather presenter",
     goal=f"Prepare a couple of sentences in TV speach about weather in the {city}, "
-            f"using information from the get_weather tool",
+    f"using information from the get_weather tool",
     backstory="You are the weather presenter on TV.",
     llm="sap/gpt-4o",
     tools=[get_weather],
     allow_delegation=False,
 )
-    
+
 agent_task = Task(
-description=(
-    f"Write a couple of sentences for TV weather report in {city} including a small joke."
-),
-expected_output=(
-    "Good quality text of two sentences about weather with small joke."
-),
-agent=agent,
+    description=(
+        f"Write a couple of sentences for TV weather report in {city} including a small joke."
+    ),
+    expected_output=(
+        "Good quality text of two sentences about weather with small joke."
+    ),
+    agent=agent,
 )
 
 crew = Crew(
-agents=[agent],
-tasks=[agent_task],
-verbose=True,
+    agents=[agent],
+    tasks=[agent_task],
+    verbose=True,
 )
 
 result = crew.kickoff()
