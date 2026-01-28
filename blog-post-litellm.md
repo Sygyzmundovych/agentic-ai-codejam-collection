@@ -39,6 +39,8 @@ You also need Python installed to install the LiteLLM library and in my case als
 
 Ok now we can actually start with building our AI Agent with CrewAI. As the name suggests you build a crew of agents that have a set of tools available to accomplish certain tasks. CrewAI uses tasks to bridge the gap between high-level goals and concrete agent actions, assigning specific objectives and expected outputs.
 
+### Classes
+
 ```mermaid
 classDiagram
     class Crew {
